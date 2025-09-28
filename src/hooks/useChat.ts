@@ -1,86 +1,110 @@
-import { useState, useCallback } from 'react';
-import { Message, DataSource, Channel, Campaign } from '@/types';
+import { useState, useCallback } from "react";
+import { Message, DataSource, Channel, Campaign } from "@/types";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [currentCampaign, setCurrentCampaign] = useState<Campaign | undefined>();
+  const [currentCampaign, setCurrentCampaign] = useState<
+    Campaign | undefined
+  >();
 
-  const addMessage = useCallback((message: Omit<Message, 'id' | 'timestamp'>) => {
-    const newMessage: Message = {
-      ...message,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, newMessage]);
-    return newMessage;
-  }, []);
+  const addMessage = useCallback(
+    (message: Omit<Message, "id" | "timestamp">) => {
+      const newMessage: Message = {
+        ...message,
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      return newMessage;
+    },
+    []
+  );
 
   const updateMessage = useCallback((id: string, updates: Partial<Message>) => {
-    setMessages(prev => 
-      prev.map(msg => 
-        msg.id === id ? { ...msg, ...updates } : msg
-      )
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, ...updates } : msg))
     );
   }, []);
 
   const connectDataSource = useCallback((dataSource: DataSource) => {
-    setDataSources(prev => {
-      const exists = prev.find(ds => ds.id === dataSource.id);
+    setDataSources((prev) => {
+      const exists = prev.find((ds) => ds.id === dataSource.id);
       if (exists) {
-        return prev.map(ds => ds.id === dataSource.id ? { ...ds, ...dataSource } : ds);
+        return prev.map((ds) =>
+          ds.id === dataSource.id ? { ...ds, ...dataSource } : ds
+        );
       }
       return [...prev, dataSource];
     });
   }, []);
 
   const disconnectDataSource = useCallback((id: string) => {
-    setDataSources(prev => prev.filter(ds => ds.id !== id));
+    setDataSources((prev) => prev.filter((ds) => ds.id !== id));
   }, []);
 
   const addChannel = useCallback((channel: Channel) => {
-    setChannels(prev => {
-      const exists = prev.find(ch => ch.id === channel.id);
+    setChannels((prev) => {
+      const exists = prev.find((ch) => ch.id === channel.id);
       if (exists) {
-        return prev.map(ch => ch.id === channel.id ? { ...ch, ...channel } : ch);
+        return prev.map((ch) =>
+          ch.id === channel.id ? { ...ch, ...channel } : ch
+        );
       }
       return [...prev, channel];
     });
   }, []);
 
   const removeChannel = useCallback((id: string) => {
-    setChannels(prev => prev.filter(ch => ch.id !== id));
+    setChannels((prev) => prev.filter((ch) => ch.id !== id));
   }, []);
 
-  const generateCampaign = useCallback(async (prompt: string) => {
-    setIsLoading(true);
-    
-    // Add user message
-    const userMessage = addMessage({
-      content: prompt,
-      role: 'user',
-    });
+  const onToggleChannel = useCallback((id: string) => {
+    setChannels((prev) =>
+      prev.map((ch) =>
+        ch.id === id
+          ? { ...ch, status: ch.status === "active" ? "inactive" : "active" }
+          : ch
+      )
+    );
+  }, []);
 
-    // Add assistant message with streaming
-    const assistantMessage = addMessage({
-      content: '',
-      role: 'assistant',
-      isStreaming: true,
-    });
+  const generateCampaign = useCallback(
+    async (prompt: string) => {
+      setIsLoading(true);
 
-    // Simulate streaming response
-    const response = await simulateStreamingResponse(prompt, dataSources, channels);
-    
-    // Update the assistant message with the complete response
-    updateMessage(assistantMessage.id, {
-      content: response,
-      isStreaming: false,
-    });
+      // Add user message
+      const userMessage = addMessage({
+        content: prompt,
+        role: "user",
+      });
 
-    setIsLoading(false);
-  }, [addMessage, updateMessage, dataSources, channels]);
+      // Add assistant message with streaming
+      const assistantMessage = addMessage({
+        content: "",
+        role: "assistant",
+        isStreaming: true,
+      });
+
+      // Simulate streaming response
+      const response = await simulateStreamingResponse(
+        prompt,
+        dataSources,
+        channels
+      );
+
+      // Update the assistant message with the complete response
+      updateMessage(assistantMessage.id, {
+        content: response,
+        isStreaming: false,
+      });
+
+      setIsLoading(false);
+    },
+    [addMessage, updateMessage, dataSources, channels]
+  );
 
   return {
     messages,
@@ -94,6 +118,7 @@ export const useChat = () => {
     disconnectDataSource,
     addChannel,
     removeChannel,
+    onToggleChannel,
     generateCampaign,
     setCurrentCampaign,
   };
@@ -101,26 +126,32 @@ export const useChat = () => {
 
 // Simulate streaming response for campaign generation
 const simulateStreamingResponse = async (
-  prompt: string, 
-  dataSources: DataSource[], 
+  prompt: string,
+  dataSources: DataSource[],
   channels: Channel[]
 ): Promise<string> => {
   // This would be replaced with actual API calls
   const campaign = generateCampaignFromPrompt(prompt, dataSources, channels);
-  
+
   return `Here's your marketing campaign based on your connected data sources and channels:
 
 \`\`\`json
 ${JSON.stringify(campaign, null, 2)}
 \`\`\`
 
-This campaign is ready to be executed across your selected channels: ${channels.map(c => c.name).join(', ')}.`;
+This campaign is ready to be executed across your selected channels: ${channels
+    .map((c) => c.name)
+    .join(", ")}.`;
 };
 
-const generateCampaignFromPrompt = (prompt: string, dataSources: DataSource[], channels: Channel[]): Campaign => {
+const generateCampaignFromPrompt = (
+  prompt: string,
+  dataSources: DataSource[],
+  channels: Channel[]
+): Campaign => {
   const now = new Date();
   const campaignId = Math.random().toString(36).substr(2, 9);
-  
+
   return {
     id: campaignId,
     name: `Campaign ${campaignId.slice(0, 6).toUpperCase()}`,
@@ -128,39 +159,43 @@ const generateCampaignFromPrompt = (prompt: string, dataSources: DataSource[], c
     channels,
     dataSources,
     audience: {
-      segments: ['high-value-customers', 'new-subscribers'],
+      segments: ["high-value-customers", "new-subscribers"],
       demographics: {
-        age: '25-45',
-        location: 'US, CA, UK',
-        interests: ['technology', 'lifestyle']
+        age: "25-45",
+        location: "US, CA, UK",
+        interests: ["technology", "lifestyle"],
       },
       behaviors: {
-        purchaseHistory: 'high-value',
-        engagement: 'active',
-        frequency: 'weekly'
-      }
+        purchaseHistory: "high-value",
+        engagement: "active",
+        frequency: "weekly",
+      },
     },
     timing: {
       startDate: now,
       endDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      frequency: 'weekly',
-      timezone: 'UTC'
+      frequency: "weekly",
+      timezone: "UTC",
     },
     content: {
-      subject: 'Special Offer Just for You!',
-      message: 'Discover our latest products with an exclusive discount. Limited time offer!',
+      subject: "Special Offer Just for You!",
+      message:
+        "Discover our latest products with an exclusive discount. Limited time offer!",
       cta: {
-        text: 'Shop Now',
-        url: 'https://example.com/shop'
-      }
+        text: "Shop Now",
+        url: "https://example.com/shop",
+      },
     },
     budget: {
       total: 10000,
-      currency: 'USD',
-      perChannel: channels.reduce((acc, ch) => ({ ...acc, [ch.id]: 10000 / channels.length }), {})
+      currency: "USD",
+      perChannel: channels.reduce(
+        (acc, ch) => ({ ...acc, [ch.id]: 10000 / channels.length }),
+        {}
+      ),
     },
-    status: 'draft',
+    status: "draft",
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
 };

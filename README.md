@@ -5,11 +5,13 @@ A Perplexity-style chat interface for creating AI-powered marketing campaigns. C
 ## Features
 
 ### 🤖 AI-Powered Chat Interface
+
 - Conversational campaign creation
 - Real-time streaming responses
 - Context-aware suggestions
 
 ### 📊 Data Source Integration
+
 - **Google Tag Manager (GTM)**
 - **Facebook Pixel**
 - **Google Ads Tag**
@@ -22,6 +24,7 @@ A Perplexity-style chat interface for creating AI-powered marketing campaigns. C
 - **Ad Managers**
 
 ### 📱 Multi-Channel Campaigns
+
 - **Email Marketing**
 - **SMS Campaigns**
 - **Push Notifications**
@@ -31,6 +34,7 @@ A Perplexity-style chat interface for creating AI-powered marketing campaigns. C
 - **Paid Advertising**
 
 ### 🎯 Smart Campaign Generation
+
 - Right time, right channel, right message
 - Audience segmentation
 - Budget allocation
@@ -54,23 +58,26 @@ A Perplexity-style chat interface for creating AI-powered marketing campaigns. C
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/marketing-orchestrator.git
 cd marketing-orchestrator
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -80,16 +87,19 @@ npm run dev
 ## Usage
 
 ### 1. Connect Data Sources
+
 - Navigate to the "Connections" tab
 - Click on data sources to connect them
 - Configure connection settings as needed
 
 ### 2. Set Up Channels
+
 - Add marketing channels (Email, SMS, Push, etc.)
 - Configure channel-specific settings
 - Toggle channels on/off as needed
 
 ### 3. Create Campaigns
+
 - Go to the "Chat" tab
 - Ask the AI to create a campaign
 - Example prompts:
@@ -98,6 +108,7 @@ npm run dev
   - "Target users who abandoned their cart"
 
 ### 4. Launch Campaigns
+
 - Review generated campaigns in the "Campaigns" tab
 - Export JSON for execution
 - Launch campaigns across selected channels
