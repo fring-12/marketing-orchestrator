@@ -146,10 +146,12 @@ Return ONLY the JSON object, no additional text.`;
       name: campaignData.name || "AI Generated Campaign",
       description: campaignData.description || prompt,
       channels: channels.filter((ch) =>
-        campaignData.channels?.some((c: any) => c.type === ch.type)
+        campaignData.channels?.some((c: { type: string }) => c.type === ch.type)
       ),
       dataSources: dataSources.filter((ds) =>
-        campaignData.dataSources?.some((d: any) => d.type === ds.type)
+        campaignData.dataSources?.some(
+          (d: { type: string }) => d.type === ds.type
+        )
       ),
       audience: campaignData.audience || {
         segments: ["general-audience"],
