@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Message, DataSource, Channel, Campaign } from "@/types";
+import { generateCampaignWithAI } from "@/lib/ai";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -88,18 +89,61 @@ export const useChat = () => {
         isStreaming: true,
       });
 
-      // Simulate streaming response
-      const response = await simulateStreamingResponse(
-        prompt,
-        dataSources,
-        channels
-      );
+      try {
+        // Use AI to generate campaign via API
+        const response = await fetch("/api/generate-campaign", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt,
+            dataSources,
+            channels,
+          }),
+        });
 
-      // Update the assistant message with the complete response
-      updateMessage(assistantMessage.id, {
-        content: response,
-        isStreaming: false,
-      });
+        if (!response.ok) {
+          throw new Error("Failed to generate campaign");
+        }
+
+        const aiResponse = await response.json();
+
+        // Set the generated campaign
+        setCurrentCampaign(aiResponse.campaign);
+
+        // Create response message with JSON
+        const responseMessage = `Here's your AI-generated marketing campaign:
+
+\`\`\`json
+${JSON.stringify(aiResponse.campaign, null, 2)}
+\`\`\`
+
+${aiResponse.explanation}
+
+This campaign is ready to be executed across your selected channels: ${channels
+          .map((c) => c.name)
+          .join(", ")}.`;
+
+        // Update the assistant message with the complete response
+        updateMessage(assistantMessage.id, {
+          content: responseMessage,
+          isStreaming: false,
+        });
+      } catch (error) {
+        console.error("Campaign generation error:", error);
+
+        // Fallback to simulated response
+        const response = await simulateStreamingResponse(
+          prompt,
+          dataSources,
+          channels
+        );
+        updateMessage(assistantMessage.id, {
+          content: response,
+          isStreaming: false,
+        });
+      }
 
       setIsLoading(false);
     },
